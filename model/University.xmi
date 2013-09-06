@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="ASCII"?>
+<e2:University
+    xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:e2="http://e2/1.0"
+    xsi:schemaLocation="http://e2/1.0 e2.ecore"
+    Name="NTNU">
+  <Persons Name="p1"/>
+  <Persons Name="p2">
+    <Submitted
+        assignment="//@Courses.0/@Assingments.0"
+        AssesedBy="//@Persons.4"/>
+  </Persons>
+  <Persons Name="p3"/>
+  <Persons Name="p4"/>
+  <Persons Name="p5"/>
+  <Courses Students="//@Persons.1 //@Persons.2 //@Persons.3"
+      Lecturerer="//@Persons.0"
+      ID="TDT  4250"
+      Name="mbse"
+      Credit="7.5"
+      TeachingAssistant="//@Persons.4">
+    <Assingments
+        Type="individual"
+        Deadline="2013-12-23T00:00:00.000+0100"
+        StartDate="2013-12-10T23:00:00.000+0100"
+        Title="end of year!"
+        Content="go home"/>
+    <Assingments
+        Type="group"
+        isMandatory="true"
+        Deadline="2013-09-30T00:00:00.000+0200"
+        StartDate="2013-09-05T00:00:00.000+0200"
+        Title="assignment 1"
+        Content="something hard"/>
+    <Lectures
+        Date="2013-09-06T00:00:00.000+0200"
+        Length="45">
+      <Content/>
+    </Lectures>
+    <StudentGroups
+        GroupMember="//@Persons.1 //@Persons.2 //@Persons.3"
+        Name="Group1">
+      <Submitted
+          assignment="//@Courses.0/@Assingments.1"
+          Comments=""
+          Assessment="83"
+          AssesedBy="//@Persons.4"/>
+    </StudentGroups>
+  </Courses>
+</e2:University>
