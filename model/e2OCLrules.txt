@@ -1,0 +1,5 @@
+assignments start before the deadline
+university must have a name
+course ID must be unique
+courses must have a lecturer
+persons must have a name
