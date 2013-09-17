@@ -1,5 +1,15 @@
 assignments start before the deadline
+
+
 university must have a name
-course ID must be unique
-courses must have a lecturer
+	invariant UniName:
+			self.Name.size() > 0;
+
+
+course ID must be unique:
+	invariant uniqueID:
+			Course.allInstances()->isUnique(ID);
+			
+
+
 persons must have a name
