@@ -20,7 +20,7 @@
   <Persons Name="p1"/>
   <Courses Students="//@Persons.1 //@Persons.2 //@Persons.3"
       Lecturerer="//@Persons.0"
-      ID="TDT  4250"
+      ID="TDT 4250"
       Name="mbse"
       Credit="7.5"
       TeachingAssistant="//@Persons.4">
@@ -43,7 +43,7 @@
       <Content/>
     </Lectures>
     <StudentGroups
-        GroupMember="//@Persons.1 //@Persons.2 //@Persons.3"
+        GroupMember="//@Persons.2 //@Persons.3 //@Persons.1"
         Name="Group1">
       <Submitted
           assignment="//@Courses.0/@Assingments.1"
@@ -56,6 +56,6 @@
       ID="TDT 4200"
       Name="kjh"/>
   <Courses Lecturerer="//@Persons.5"
-      ID="TDT 4250"
-      Name="mbse"/>
+      ID="TDT 4257"
+      Name="meh"/>
 </e2:University>

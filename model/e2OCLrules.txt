@@ -24,16 +24,22 @@ self.Name.size()>1
 Results:
 true
 
-5. Check if students have delivered assignments 
-context University:
-self.Courses.Students.Submitted->isEmpty()
-Results:
-true
 
-6. If an assignment is delivered and assessed by a person. Check if this person is a teaching assistant.
+5. If an assignment is delivered and assessed by a person, Check if this person is a teaching assistant.
+(these work, but mark the error in course, and not the submission)
 Context Course:
 self.StudentGroups.Submitted.AssesedBy.Name = self.TeachingAssistant.Name
 Results:
 true
+Context Course:
+self.Students.Submitted.AssesedBy.Name = self.TeachingAssistant.Name
+Results:
+true
 
-7. Check if students in a group actually takes the course
+
+6. Check if students in a group actually takes the course
+(does not work in console, but works fine as invariant in ecore file)
+context Group:
+self.GroupMember->forAll(p:Person  |  self.Course.Students->includes(p));
+Results:
+true
