@@ -43,7 +43,7 @@ OptionAnswer:
 ;
 
 YesNoAnswer:
-	(yes ?= 'yes' | 'no')
+	{YesNoAnswer} (yes ?= 'yes' | 'no')
 ;
 
 NumberAnswer:
