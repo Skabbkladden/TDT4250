@@ -16,51 +16,49 @@ QAContainerOptions:
 QAPart: Question | QASection;
 
 Question:
-	text=EString '?' correct=Answer '!'
-	(candidates += Answer)*
+	
+	text =EString '?' ' #'? correct = Answer  '!'
+	('Candidates:' (candidates += Answer ', ')* (candidates += Answer))?
 	(nextRules += NextRule)*
 ;
 
+QASection:
+	'Section ' name = EString 
+	'{'
+	(options = QAContainerOptions)?
+	(questions += Question)*
+	'}'
+;
+
 NextRule:
-	tries=EInt
+	tries = EInt
 ;
 
 Answer:
-	TextAnswer|NumberAnswer|YesNoAnswer|OptionAnswer
+	TextAnswer | NumberAnswer | YesNoAnswer | OptionAnswer
 ;
 
 OptionAnswer:
-	optionNumber=EInt
+	optionNumber = EInt
 ;
 
 YesNoAnswer:
-	yes=EBoolean
+	(yes ?= 'yes' | 'no')
 ;
 
 NumberAnswer:
-	(number=EDouble '+-' epsilon=EDouble)|(ExpressionAnswer '(' number=EDouble') +-' epsilon=EDouble)
+	(number = EDouble '+-' epsilon = EDouble)|('=' ExpressionAnswer ' +-' epsilon = EDouble)
 ;
 
 ExpressionAnswer:
-	expression=EString
+	expression = EString
 ;
 
 TextAnswer:
-	text=EString
+	text = EString
 ;
 
 
-
-
-QASection:
-	'Section ' name=EString
-	(options = QAContainerOptions)?
-	(questions += Question)*
-;
-
-
-
-EBoolean returns ecore::EBoolean:  'yes'|'no';
 EString returns ecore::EString: STRING;
 EDouble returns ecore::EDouble: '-'? INT ('.' INT (('E'|'e') '-'? INT)?)?;
 EInt returns ecore::EInt: '-'? INT;
