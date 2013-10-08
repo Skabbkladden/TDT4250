@@ -14,7 +14,8 @@ local.properties
 .classpath
 .settings/
 .loadpath
-*/src-gen/
+e4/qa.xtext/src-gen/
+e4/qa.xtext/xtend-gen/
 
 # External tool builders
 .externalToolBuilders/
