@@ -13,11 +13,9 @@ tmp/
 local.properties
 .settings/
 .loadpath
-e3/qa.xtext/src-gen/
 e3/qa.xtext/xtend-gen/
 e3/qa.xtext.test/src-gen/
 e3/qa.xtext.ui/src-gen/
-e4/qa.xtext/src-gen/
 e4/qa.xtext/xtend-gen/
 e4/qa.xtext.test/src-gen/
 e4/qa.xtext.ui/src-gen/
