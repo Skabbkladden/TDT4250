@@ -28,6 +28,7 @@ class QaGenerator implements IGenerator {
 			package «packageNameList.join(".")»;
 			public class «className» implements Runnable {
 				
+				private maxTries;
 				private tdt4250.io.AbstractIO io = new tdt4250.io.ConsoleIO();
 				
 				public void run() {
@@ -38,9 +39,10 @@ class QaGenerator implements IGenerator {
 					new «className»().run();
 				}
 			}
-		''')
+		''') 
 	}
 
+	
 	def dispatch CharSequence generate(QATest qa) {
 		qa.parts.join("\n", [p | p.generate])
 	}
@@ -52,16 +54,113 @@ class QaGenerator implements IGenerator {
 		'''
 		//Generate codes for a section
 		{
-		io.println("Here comes a section");
+		io.println("Here comes section: «qs.name»");
+		maxTries = «qs.options.maxTries»;
 		«qs.questions.join("\n", [q | q.generate])»
 		}'''
 	}
+	/*
+	 * String input = io.inputString("Write your name: ");
+		if (input.trim().equals("«qs.name»")){
+			io.println(input);	
+		}
+	 */
 
 	def dispatch CharSequence generate(Question q) {
 		'''
 		//Generate codes for a question
 		    {
-		        io.println("Here comes a question");
+		    	String skipToQuestion;
+				boolean correct;
+				int maxTriesCounter = 0;
+				
+				while(!correct && maxTriesCounter < maxTries){
+					maxTriesCounter++;
+					
+			        «IF q.candidates.length > 0»
+			        int count = 1;
+			        	«FOR candidate : q.candidates»
+				        	if(«candidate instanceof OptionAnswer» && count == 1){
+				        		io.println("«q.text» - choose an option.");
+				        	}else{
+				        		io.println("«q.text» - write the correct answer.");
+				        	}
+			        		«IF candidate instanceof TextAnswer»
+			        			io.println("? " + count + ") «(candidate as TextAnswer).text»");
+			        		«ELSEIF candidate instanceof NumberAnswer»
+			        			io.println("? " + count + ") «(candidate as NumberAnswer).number» +- «(candidate as NumberAnswer).epsilon»");
+			        		«ELSEIF candidate instanceof YesNoAnswer»
+			        			io.println("? " + count + ") «(candidate as YesNoAnswer).yes»");
+			        		«ELSEIF candidate instanceof OptionAnswer»
+			        			io.println("? " + count + ") «(candidate as OptionAnswer).optionNumber»");
+			        		«ELSEIF candidate instanceof ExpressionAnswer»
+			        			io.println("? " + count + ") «(candidate as ExpressionAnswer).expression» +- «(candidate as ExpressionAnswer).epsilon»");
+			        		«ENDIF»
+			        		count++;
+			        	«ENDFOR»
+			        «ELSE»
+			        	io.println("«q.text» - write the correct answer.");
+			        «ENDIF»
+			        
+			        
+			        «IF q.correct instanceof TextAnswer»
+			        	String input = io.inputString("");
+			        	
+			        	if (input.toUpperCase().equals(("«(q.correct as TextAnswer).text»").toUpperCase())){
+			        		io.println("Correct!");
+			        		correct = true;
+			        	}else{
+			        		io.println("Wrong!");
+			        	}
+			        «ELSEIF (q.correct instanceof NumberAnswer) && !(q.correct instanceof ExpressionAnswer)»
+			        	double input = io.inputDouble("");
+			        	double answer = «(q.correct as NumberAnswer).number»;
+			        	double epsilon = «(q.correct as NumberAnswer).epsilon»;
+			        	
+			        	if (input >= (answer - epsilon) || input <= (answer + epsilon)){
+			        		io.println("Correct!");
+			        		correct = true;
+			        	}else{
+			        		io.println("Wrong!");
+			        	}
+			        «ELSEIF q.correct instanceof OptionAnswer»	
+			        	int input = io.inputInt("");
+			        	
+			        	if (input == «(q.correct as OptionAnswer).optionNumber»){
+			        		io.println("Correct!");
+			        		correct = true;
+			        	}else{
+			        		io.println("Wrong!");
+			        	}
+			        «ELSEIF q.correct instanceof ExpressionAnswer»
+			        	double input = io.inputDouble("");
+			        	double answer = «(q.correct as ExpressionAnswer).expression»;
+			        	double epsilon = «(q.correct as ExpressionAnswer).epsilon»;
+			        	
+			        	if (input >= (answer - epsilon) || input <= (answer + epsilon)){
+			        		io.println("Correct!");
+			        		correct = true;
+			        	}else{
+			        		io.println("Wrong!");
+			        	}
+			        «ELSEIF q.correct instanceof YesNoAnswer»	
+			        	String input = io.inputString("");
+			        	boolean answer;
+			        	
+			        	if(input.toUpperCase().equals("YES"))
+			        		answer = true;
+			        	else
+			        		answer = false;
+			        	
+			        	if (answer == «(q.correct as YesNoAnswer).yes»){
+			        		io.println("Correct!");
+			        		correct = true;
+			        	}else{
+			        		io.println("Wrong!");
+			        	}
+			        «ENDIF»
+		        }
+		        
 		        //repeat the following until a correct answer is given, or hit the maximum tries if there is.
 		    	//1.print out the question,
 		        //2.get user input 
