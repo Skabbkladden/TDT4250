@@ -25,18 +25,18 @@ class QaGenerator implements IGenerator {
 		val packageNameList = resource.URI.trimSegments(1).segmentsList.drop(3)
 		val packageName = packageNameList.join(".")
 		fsa.generateFile(packageNameList.join("/") + "/" + className + ".java", '''
-			package «packageNameList.join(".")»;
-			public class «className» implements Runnable {
+			package Â«packageNameList.join(".")Â»;
+			public class Â«classNameÂ» implements Runnable {
 				
-				private maxTries;
+				private int maxTries;
 				private tdt4250.io.AbstractIO io = new tdt4250.io.ConsoleIO();
 				
 				public void run() {
-					«generate(resource.contents.get(0) as QATest)»
+					Â«generate(resource.contents.get(0) as QATest)Â»
 				}
 
 				public static void main(String[] args) {
-					new «className»().run();
+					new Â«classNameÂ»().run();
 				}
 			}
 		''') 
@@ -54,14 +54,16 @@ class QaGenerator implements IGenerator {
 		'''
 		//Generate codes for a section
 		{
-		io.println("Here comes section: «qs.name»");
-		maxTries = «qs.options.maxTries»;
-		«qs.questions.join("\n", [q | q.generate])»
+		io.println("Here comes section: Â«qs.nameÂ»");
+		Â«IF qs.options != nullÂ»
+		maxTries = Â«qs.options.maxTriesÂ»;
+		Â«qs.questions.join("\n", [q | q.generate])Â»
+		Â«ENDIFÂ»
 		}'''
 	}
 	/*
 	 * String input = io.inputString("Write your name: ");
-		if (input.trim().equals("«qs.name»")){
+		if (input.trim().equals("Â«qs.nameÂ»")){
 			io.println(input);	
 		}
 	 */
@@ -71,51 +73,51 @@ class QaGenerator implements IGenerator {
 		//Generate codes for a question
 		    {
 		    	String skipToQuestion;
-				boolean correct;
+				boolean correct = false;
 				int maxTriesCounter = 0;
 				
 				while(!correct && maxTriesCounter < maxTries){
 					maxTriesCounter++;
 					
-			        «IF q.candidates.length > 0»
+			        Â«IF q.candidates.length > 0Â»
 			        int count = 1;
-			        	«FOR candidate : q.candidates»
-				        	if(«candidate instanceof OptionAnswer» && count == 1){
-				        		io.println("«q.text» - choose an option.");
+			        	Â«FOR candidate : q.candidatesÂ»
+				        	if(Â«candidate instanceof OptionAnswerÂ» && count == 1){
+				        		io.println("Â«q.textÂ» - choose an option.");
 				        	}else{
-				        		io.println("«q.text» - write the correct answer.");
+				        		io.println("Â«q.textÂ» - write the correct answer.");
 				        	}
-			        		«IF candidate instanceof TextAnswer»
-			        			io.println("? " + count + ") «(candidate as TextAnswer).text»");
-			        		«ELSEIF candidate instanceof NumberAnswer»
-			        			io.println("? " + count + ") «(candidate as NumberAnswer).number» +- «(candidate as NumberAnswer).epsilon»");
-			        		«ELSEIF candidate instanceof YesNoAnswer»
-			        			io.println("? " + count + ") «(candidate as YesNoAnswer).yes»");
-			        		«ELSEIF candidate instanceof OptionAnswer»
-			        			io.println("? " + count + ") «(candidate as OptionAnswer).optionNumber»");
-			        		«ELSEIF candidate instanceof ExpressionAnswer»
-			        			io.println("? " + count + ") «(candidate as ExpressionAnswer).expression» +- «(candidate as ExpressionAnswer).epsilon»");
-			        		«ENDIF»
+			        		Â«IF candidate instanceof TextAnswerÂ»
+			        			io.println("? " + count + ") Â«(candidate as TextAnswer).textÂ»");
+			        		Â«ELSEIF candidate instanceof NumberAnswerÂ»
+			        			io.println("? " + count + ") Â«(candidate as NumberAnswer).numberÂ» +- Â«(candidate as NumberAnswer).epsilonÂ»");
+			        		Â«ELSEIF candidate instanceof YesNoAnswerÂ»
+			        			io.println("? " + count + ") Â«(candidate as YesNoAnswer).yesÂ»");
+			        		Â«ELSEIF candidate instanceof OptionAnswerÂ»
+			        			io.println("? " + count + ") Â«(candidate as OptionAnswer).optionNumberÂ»");
+			        		Â«ELSEIF candidate instanceof ExpressionAnswerÂ»
+			        			io.println("? " + count + ") Â«(candidate as ExpressionAnswer).expressionÂ» +- Â«(candidate as ExpressionAnswer).epsilonÂ»");
+			        		Â«ENDIFÂ»
 			        		count++;
-			        	«ENDFOR»
-			        «ELSE»
-			        	io.println("«q.text» - write the correct answer.");
-			        «ENDIF»
+			        	Â«ENDFORÂ»
+			        Â«ELSEÂ»
+			        	io.println("Â«q.textÂ» - write the correct answer.");
+			        Â«ENDIFÂ»
 			        
 			        
-			        «IF q.correct instanceof TextAnswer»
+			        Â«IF q.correct instanceof TextAnswerÂ»
 			        	String input = io.inputString("");
 			        	
-			        	if (input.toUpperCase().equals(("«(q.correct as TextAnswer).text»").toUpperCase())){
+			        	if (input.toUpperCase().equals(("Â«(q.correct as TextAnswer).textÂ»").toUpperCase())){
 			        		io.println("Correct!");
 			        		correct = true;
 			        	}else{
 			        		io.println("Wrong!");
 			        	}
-			        «ELSEIF (q.correct instanceof NumberAnswer) && !(q.correct instanceof ExpressionAnswer)»
+			        Â«ELSEIF (q.correct instanceof NumberAnswer) && !(q.correct instanceof ExpressionAnswer)Â»
 			        	double input = io.inputDouble("");
-			        	double answer = «(q.correct as NumberAnswer).number»;
-			        	double epsilon = «(q.correct as NumberAnswer).epsilon»;
+			        	double answer = Â«(q.correct as NumberAnswer).numberÂ»;
+			        	double epsilon = Â«(q.correct as NumberAnswer).epsilonÂ»;
 			        	
 			        	if (input >= (answer - epsilon) || input <= (answer + epsilon)){
 			        		io.println("Correct!");
@@ -123,19 +125,19 @@ class QaGenerator implements IGenerator {
 			        	}else{
 			        		io.println("Wrong!");
 			        	}
-			        «ELSEIF q.correct instanceof OptionAnswer»	
+			       Â«ELSEIF q.correct instanceof OptionAnswerÂ»	
 			        	int input = io.inputInt("");
 			        	
-			        	if (input == «(q.correct as OptionAnswer).optionNumber»){
+			        	if (input == Â«(q.correct as OptionAnswer).optionNumberÂ»){
 			        		io.println("Correct!");
 			        		correct = true;
 			        	}else{
 			        		io.println("Wrong!");
 			        	}
-			        «ELSEIF q.correct instanceof ExpressionAnswer»
+			        Â«ELSEIF q.correct instanceof ExpressionAnswerÂ»
 			        	double input = io.inputDouble("");
-			        	double answer = «(q.correct as ExpressionAnswer).expression»;
-			        	double epsilon = «(q.correct as ExpressionAnswer).epsilon»;
+			        	double answer = Â«(q.correct as ExpressionAnswer).expressionÂ»;
+			        	double epsilon = Â«(q.correct as ExpressionAnswer).epsilonÂ»;
 			        	
 			        	if (input >= (answer - epsilon) || input <= (answer + epsilon)){
 			        		io.println("Correct!");
@@ -143,7 +145,7 @@ class QaGenerator implements IGenerator {
 			        	}else{
 			        		io.println("Wrong!");
 			        	}
-			        «ELSEIF q.correct instanceof YesNoAnswer»	
+			        Â«ELSEIF q.correct instanceof YesNoAnswerÂ»	
 			        	String input = io.inputString("");
 			        	boolean answer;
 			        	
@@ -152,13 +154,13 @@ class QaGenerator implements IGenerator {
 			        	else
 			        		answer = false;
 			        	
-			        	if (answer == «(q.correct as YesNoAnswer).yes»){
+			        	if (answer == Â«(q.correct as YesNoAnswer).yesÂ»){
 			        		io.println("Correct!");
 			        		correct = true;
 			        	}else{
 			        		io.println("Wrong!");
 			        	}
-			        «ENDIF»
+			        Â«ENDIFÂ»
 		        }
 		        
 		        //repeat the following until a correct answer is given, or hit the maximum tries if there is.
