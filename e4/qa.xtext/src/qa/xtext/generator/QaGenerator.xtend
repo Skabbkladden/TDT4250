@@ -25,18 +25,22 @@ class QaGenerator implements IGenerator {
 		val packageNameList = resource.URI.trimSegments(1).segmentsList.drop(3)
 		val packageName = packageNameList.join(".")
 		fsa.generateFile(packageNameList.join("/") + "/" + className + ".java", '''
-			package Â«packageNameList.join(".")Â»;
-			public class Â«classNameÂ» implements Runnable {
+			package «packageNameList.join(".")»;
+			public class «className» implements Runnable {
 				
-				private int maxTries;
 				private tdt4250.io.AbstractIO io = new tdt4250.io.ConsoleIO();
+
+				private int maxTries = 1;
+				private  boolean revealAnswer = false;
+				private boolean skip = false;
+				private String nextQ = "";
 				
 				public void run() {
-					Â«generate(resource.contents.get(0) as QATest)Â»
+					«generate(resource.contents.get(0) as QATest)»
 				}
 
 				public static void main(String[] args) {
-					new Â«classNameÂ»().run();
+					new «className»().run();
 				}
 			}
 		''') 
@@ -54,16 +58,20 @@ class QaGenerator implements IGenerator {
 		'''
 		//Generate codes for a section
 		{
-		io.println("Here comes section: Â«qs.nameÂ»");
-		Â«IF qs.options != nullÂ»
-		maxTries = Â«qs.options.maxTriesÂ»;
-		Â«qs.questions.join("\n", [q | q.generate])Â»
-		Â«ENDIFÂ»
+		io.println("Here comes section: «qs.name»");
+		«IF qs.options != null»
+			maxTries = «qs.options.maxTries»;
+			revealAnswer = «qs.options.revealAnswer»;
+		«ELSE»
+			maxTries = 1;
+			revealAnswer = false;
+		«ENDIF»
+			«qs.questions.join("\n", [q | q.generate])»
 		}'''
 	}
 	/*
 	 * String input = io.inputString("Write your name: ");
-		if (input.trim().equals("Â«qs.nameÂ»")){
+		if (input.trim().equals("«qs.name»")){
 			io.println(input);	
 		}
 	 */
@@ -72,95 +80,136 @@ class QaGenerator implements IGenerator {
 		'''
 		//Generate codes for a question
 		    {
-		    	String skipToQuestion;
+		    if (!skip || (skip && nextQ.equals("«q.name»"))){
+		    	skip = false;
 				boolean correct = false;
 				int maxTriesCounter = 0;
 				
 				while(!correct && maxTriesCounter < maxTries){
 					maxTriesCounter++;
 					
-			        Â«IF q.candidates.length > 0Â»
-			        int count = 1;
-			        	Â«FOR candidate : q.candidatesÂ»
-				        	if(Â«candidate instanceof OptionAnswerÂ» && count == 1){
-				        		io.println("Â«q.textÂ» - choose an option.");
-				        	}else{
-				        		io.println("Â«q.textÂ» - write the correct answer.");
-				        	}
-			        		Â«IF candidate instanceof TextAnswerÂ»
-			        			io.println("? " + count + ") Â«(candidate as TextAnswer).textÂ»");
-			        		Â«ELSEIF candidate instanceof NumberAnswerÂ»
-			        			io.println("? " + count + ") Â«(candidate as NumberAnswer).numberÂ» +- Â«(candidate as NumberAnswer).epsilonÂ»");
-			        		Â«ELSEIF candidate instanceof YesNoAnswerÂ»
-			        			io.println("? " + count + ") Â«(candidate as YesNoAnswer).yesÂ»");
-			        		Â«ELSEIF candidate instanceof OptionAnswerÂ»
-			        			io.println("? " + count + ") Â«(candidate as OptionAnswer).optionNumberÂ»");
-			        		Â«ELSEIF candidate instanceof ExpressionAnswerÂ»
-			        			io.println("? " + count + ") Â«(candidate as ExpressionAnswer).expressionÂ» +- Â«(candidate as ExpressionAnswer).epsilonÂ»");
-			        		Â«ENDIFÂ»
+					//checking for candidate answers
+			        «IF q.candidates.length > 0»
+			        	int count = 1;
+			        	if(«q.correct instanceof OptionAnswer» && count == 1){
+			        		io.println("«q.text»? - choose an option.");
+			        	}else{
+			        		io.println("«q.text»? - write the correct answer.");
+			        	}
+			        	«FOR candidate : q.candidates»
+			        		«IF candidate instanceof TextAnswer»
+			        			io.println("? " + count + ") «(candidate as TextAnswer).text»");
+			        		«ELSEIF candidate instanceof NumberAnswer»
+			        			io.println("? " + count + ") «(candidate as NumberAnswer).number» +- «(candidate as NumberAnswer).epsilon»");
+			        		«ELSEIF candidate instanceof YesNoAnswer»
+			        			io.println("? " + count + ") «(candidate as YesNoAnswer).yes»");
+			        		«ELSEIF candidate instanceof OptionAnswer»
+			        			io.println("? " + count + ") «(candidate as OptionAnswer).optionNumber»");
+			        		«ELSEIF candidate instanceof ExpressionAnswer»
+			        			io.println("? " + count + ") «(candidate as ExpressionAnswer).expression» +- «(candidate as ExpressionAnswer).epsilon»");
+			        		«ENDIF»
 			        		count++;
-			        	Â«ENDFORÂ»
-			        Â«ELSEÂ»
-			        	io.println("Â«q.textÂ» - write the correct answer.");
-			        Â«ENDIFÂ»
+			        	«ENDFOR»
+			        «ELSE»
+			        	io.println("«q.text»? - write the correct answer.");
+			        «ENDIF»
 			        
-			        
-			        Â«IF q.correct instanceof TextAnswerÂ»
+			        //checking answers
+			        «IF q.correct instanceof TextAnswer»
 			        	String input = io.inputString("");
 			        	
-			        	if (input.toUpperCase().equals(("Â«(q.correct as TextAnswer).textÂ»").toUpperCase())){
+			        	if (input.toUpperCase().equals(("«(q.correct as TextAnswer).text»").toUpperCase())){
 			        		io.println("Correct!");
 			        		correct = true;
 			        	}else{
 			        		io.println("Wrong!");
+			        		if(maxTriesCounter == maxTries && revealAnswer){
+			        			io.println("Correct answer is: «(q.correct as TextAnswer).text»");
+			        		}
 			        	}
-			        Â«ELSEIF (q.correct instanceof NumberAnswer) && !(q.correct instanceof ExpressionAnswer)Â»
+			        «ELSEIF (q.correct instanceof NumberAnswer) && !(q.correct instanceof ExpressionAnswer)»
 			        	double input = io.inputDouble("");
-			        	double answer = Â«(q.correct as NumberAnswer).numberÂ»;
-			        	double epsilon = Â«(q.correct as NumberAnswer).epsilonÂ»;
+			        	double answer = «(q.correct as NumberAnswer).number»;
+			        	double epsilon = «(q.correct as NumberAnswer).epsilon»;
 			        	
-			        	if (input >= (answer - epsilon) || input <= (answer + epsilon)){
+			        	if (input >= (answer - epsilon) && input <= (answer + epsilon)){
 			        		io.println("Correct!");
 			        		correct = true;
 			        	}else{
 			        		io.println("Wrong!");
+			        		if(maxTriesCounter == maxTries && revealAnswer){
+			        			io.println("Correct answer is: " + answer + " +- " + epsilon);
+			        		}
 			        	}
-			       Â«ELSEIF q.correct instanceof OptionAnswerÂ»	
+			       «ELSEIF q.correct instanceof OptionAnswer»	
 			        	int input = io.inputInt("");
 			        	
-			        	if (input == Â«(q.correct as OptionAnswer).optionNumberÂ»){
+			        	if (input == «(q.correct as OptionAnswer).optionNumber»){
 			        		io.println("Correct!");
 			        		correct = true;
 			        	}else{
 			        		io.println("Wrong!");
+			        		if(maxTriesCounter == maxTries && revealAnswer){
+			        			io.println("Correct answer is: " + «(q.correct as OptionAnswer).optionNumber»);
+			        		}
 			        	}
-			        Â«ELSEIF q.correct instanceof ExpressionAnswerÂ»
+			        «ELSEIF q.correct instanceof ExpressionAnswer»
 			        	double input = io.inputDouble("");
-			        	double answer = Â«(q.correct as ExpressionAnswer).expressionÂ»;
-			        	double epsilon = Â«(q.correct as ExpressionAnswer).epsilonÂ»;
+			        	double answer = «(q.correct as ExpressionAnswer).expression»;
+			        	double epsilon = «(q.correct as ExpressionAnswer).epsilon»;
 			        	
-			        	if (input >= (answer - epsilon) || input <= (answer + epsilon)){
+			        	if (input >= (answer - epsilon) && input <= (answer + epsilon)){
 			        		io.println("Correct!");
 			        		correct = true;
 			        	}else{
 			        		io.println("Wrong!");
+			        		if(maxTriesCounter == maxTries && revealAnswer){
+			        			io.println("Correct answer is: " + answer + " +- " + epsilon);
+			        		}
 			        	}
-			        Â«ELSEIF q.correct instanceof YesNoAnswerÂ»	
+			        «ELSEIF q.correct instanceof YesNoAnswer»	
 			        	String input = io.inputString("");
-			        	boolean answer;
+			        	boolean correctAnswer = «(q.correct as YesNoAnswer).yes»;
+			        	boolean answer = false;
 			        	
-			        	if(input.toUpperCase().equals("YES"))
+			        	if(input.toUpperCase().equals("YES") && correctAnswer){
 			        		answer = true;
-			        	else
+			        	}else if(input.toUpperCase().equals("NO") && !correctAnswer){
 			        		answer = false;
+			        	}
 			        	
-			        	if (answer == Â«(q.correct as YesNoAnswer).yesÂ»){
+			        	if (answer == correctAnswer){
 			        		io.println("Correct!");
 			        		correct = true;
 			        	}else{
 			        		io.println("Wrong!");
+			        		if(maxTriesCounter == maxTries && revealAnswer){
+			        			if(correctAnswer){
+			        				io.println("Correct answer is: Yes");
+			        			}else{
+			        				io.println("Correct answer is: No");
+			        			}
+			        		}
 			        	}
-			        Â«ENDIFÂ»
+			        «ENDIF»
+		        }
+		        //skipping-control
+		        
+		        	if(correct){
+		        	«IF q.nextRules != null»
+		        	int lowestTries = Integer.MAX_VALUE;
+		        		«FOR nextRule:q.nextRules»
+		        		//search  for the nextRule with the lowest tries-value
+		        			if(maxTriesCounter <= «nextRule.tries»){
+		        				if(«nextRule.tries» < lowestTries){
+		        					skip = true;
+		        					lowestTries = «nextRule.tries»;
+		        					nextQ = "«nextRule.next.name»";
+		        					}
+		        				}
+		           		«ENDFOR»
+		        	«ENDIF»
+		        	}
 		        }
 		        
 		        //repeat the following until a correct answer is given, or hit the maximum tries if there is.
